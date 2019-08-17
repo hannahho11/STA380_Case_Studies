@@ -1,8 +1,8 @@
 ---
-title: "Stats_HW1"
-author: "Kevin"
+title: "STA380 Case Studies"
+author: "Kevin Brill, Hannah Ho, Ananya ???, Shane Kok"
 date: "8/6/2019"
-output: html_document
+output: md_document
 ---
 
 ```{r setup, include=FALSE}
@@ -18,7 +18,7 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r}
 library(mosaic)
 
-green = read.csv('../data/greenbuildings.csv')
+green = read.csv('./data/greenbuildings.csv')
 summary(green)
 ```
 ```{r}
