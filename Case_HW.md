@@ -1,7 +1,7 @@
-**STA380 Exercises**
+STA380 Exercises
+================
 
-Kevin Brill, Hannah Ho, Ananya ???, Shane Kok
-=============================================
+**Kevin Brill, Hannah Ho, Ananya ???, Shane Kok**
 
 Maybe a little intro here before we get into the code.
 
