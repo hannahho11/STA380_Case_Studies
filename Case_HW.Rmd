@@ -1,6 +1,6 @@
 ---
 title: "STA380 Case Studies"
-author: "Kevin Brill, Hannah Ho, Ananya ???, Shane Kok"
+author: "Kevin Brill, Ananya Garg, Hannah Ho, Shane Kok"
 date: "8/6/2019"
 output: md_document
 ---
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # STA380 Exercises
 
-**Kevin Brill, Hannah Ho, Ananya ???, Shane Kok**
+**Kevin Brill, Ananya Garg, Hannah Ho, Shane Kok**
 
 Maybe a little intro here before we get into the code.
 
