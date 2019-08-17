@@ -9,21 +9,37 @@ output: md_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+**STA380 Exercises**
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Kevin Brill, Hannah Ho, Ananya ???, Shane Kok
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Maybe a little intro here before we get into the code.
 
-```{r}
+## Visual Story Telling Part 1: Green Buildings
+
+```{r GreenBuilding, message=FALSE, warning=FALSE}
 library(mosaic)
 
 green = read.csv('./data/greenbuildings.csv')
-summary(green)
 ```
-```{r}
+## Visual Story Telling Part 2: Flights at ABIA
+```{r ABIA, message=FALSE, warning=FALSE}
+
+```
+## Portfolio Modeling
+```{r Portfolio, message=FALSE, warning=FALSE}
+
+```
+## Market Segmentation
+```{r Market Segmentation, message=FALSE, warning=FALSE}
+
+```
+## Author Attribution
+```{r Author, message=FALSE, warning=FALSE}
+
+```
+## Association Rule Mining
+```{r Association Rule Mining, message=FALSE, warning=FALSE}
 
 ```
 
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
