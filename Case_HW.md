@@ -37,8 +37,10 @@ Visual Story Telling Part 2: Flights at ABIA
       labs(title = "Carrier Average Arrival Delays by Month")+
       scale_x_discrete(name='Month',limits=months)
 
-![](Case_HW_files/figure-markdown_strict/ABIA%20Arrivals-1.png) \#\#
+![](Case_HW_files/figure-markdown_strict/ABIA%20Arrivals-1.png)
+
 Portfolio Modeling
+------------------
 
 Market Segmentation
 -------------------

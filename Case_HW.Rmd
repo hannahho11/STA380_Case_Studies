@@ -47,6 +47,7 @@ ggplot(data = month_arrival_avg) +
   scale_x_discrete(name='Month',limits=months)
 
 ```
+
 ## Portfolio Modeling
 ```{r Portfolio, message=FALSE, warning=FALSE}
 
