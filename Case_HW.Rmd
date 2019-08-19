@@ -49,9 +49,108 @@ ggplot(data = month_arrival_avg) +
 ```
 
 ## Portfolio Modeling
-```{r Portfolio, message=FALSE, warning=FALSE}
+```{r Portfolio, echo=FALSE, message=FALSE, warning=FALSE}
+library(mosaic)
+library(quantmod)
+library(foreach)
+set.seed(100)
+#BALANCED PORTFOLIO
+#-------------------------------------------------------------------------------
+#### Now use a bootstrap approach
+#### With more stocks
 
+mystocks = c("USO", "VBK", "XLV", "VNQ", "VFH")
+myprices = getSymbols(mystocks, from = "2017-01-01")
+
+
+# A chunk of code for adjusting all stocks
+# creates a new object adding 'a' to the end
+# For example, WMT becomes WMTa, etc
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")") #for loop to adjust the OHLC for each ticker and store into a
+	eval(parse(text=expr))
+}
+
+head(USOa)
+
+# Combine all the returns in a matrix
+all_returns = cbind(	ClCl(USOa),
+								ClCl(VBKa),
+								ClCl(XLVa),
+								ClCl(VNQa),
+								ClCl(VFHa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+
+# Compute the returns from the closing prices
+pairs(all_returns)
+
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.05,0.3,0.05, 0.3, 0.3)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+
+# Compute your new total wealth
+total_wealth = sum(holdings)
+
+
+# Now loop over two trading weeks
+total_wealth = 100000
+weights = c(0.05,0.3,0.05, 0.3, 0.3)
+holdings = weights * total_wealth
+n_days = 20
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+
+
+# Now simulate many different possible scenarios  
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights = c(0.05,0.3,0.05, 0.3, 0.3)
+	holdings = weights * total_wealth
+	n_days = 20
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+
+head(sim1)
+hist(sim1[,n_days], 25)
+
+# Profit/loss
+mean(sim1[,n_days])
+hist(sim1[,n_days]- initial_wealth, breaks=30)
 ```
+
+VaR stands for value at risk, and this metric shows the risk of loss for an investment on a distribution. We calculated the VaR distribution for three different types of portfolios were tested for our portfolio modeling: a balanced, an aggressive, and a conservative portfolio. 
+
+The aggressive portfolio is composed of small cap growth stock ETF’s, which means that it is focused on smaller stocks with potential. This is more risky because small cap companies have a larger chance of going under and are less stable than their large cap stock counterparts. As expected, the 5% VaR for the aggressive portfolio is the worst and is -$8000.
+
+The conservative portfolio is mainly made up of different types of bond and money market ETF’s, which are one of the safest types of investments you can make on the financial market. Many of these are either mortgage or government backed bonds, therefore they are collateralized and this limits your risk significantly. The 5% VaR for the conservative portfolio is the best and is only -$1000.
+
+The balanced portfolio contains a wide range of financial products from across the spectrum. These products contain ETF’s from a wide range of industries, such as oil and real estate. This spectrum of different industries helps to balance out the portfolio, and mostly Vanguard products were chosen for their strong returns and good past performance, in order to help balance out the risk of this portfolio. A healthcare ETF is super stable as well, which is why one of these ETF’s was included in the portfolio too. The 5% VaR for the balanced portfolio is about -$5000. 
+
+The VaR distributions for each portfolio came out as expected, with the conservative portfolio being the least risky and the aggressive portfolio being the most. 
+
 ## Market Segmentation
 ```{r Market Segmentation, message=FALSE, warning=FALSE}
 
@@ -267,9 +366,13 @@ Here, we find the PCAs of the training and testing sets. We find that the first 
 We obtain results for variations of two types of models: KNN and Random Forest. The prediction accuracies for each variant are listed below:
 
 **KNN with cosine distance:** 55.24%
+
 **KNN with cosine distance of first 600 principal components:** 58.08%
+
 **Random Forest:** 60.48%
-**Random Forest on first 600 principal components:**
+
+**Random Forest on first 600 principal components:** 55.28%
+
 **Random Forest with m=sqrt(p):** 62.36%
 
 As can be seen from the results above, our random forest model with m=sqrt(p)=37 and no dimensionality reduction yielded the best classification accuracy at 62.36% of articles attributed to the correct author.
@@ -281,7 +384,7 @@ Our team tried to use Naive Bayes and BART to classify the articles, but ran int
 Further, the best way to improve our classification accuracies would be to have more robust preprocessing. For example, we could create a dummy "unknown" variable in our test DTM that would count the number of words that show up in our test set that didn't appear in our training set. Our above test DTM simply ignore new words in the test set, which likely decreases performance. We could also consider n-gram groupings of words for more nuanced TF-IDF values in our DTMs.
 
 ## Association Rule Mining
-```{r Association Rule Mining, message=FALSE, warning=FALSE}
+```{r Association Rule Mining, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(arules)  # has a big ecosystem of packages built around it
 library(arulesViz)
@@ -297,8 +400,7 @@ transactions = as(groceries, "transactions")
 apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.5, maxlen=3))
 
 #view results
-inspect(apriori_results)
-
 inspect(subset(apriori_results, subset=lift > 2))
 ```
 
+Write-up here

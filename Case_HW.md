@@ -43,6 +43,103 @@ Visual Story Telling Part 2: Flights at ABIA
 Portfolio Modeling
 ------------------
 
+    ##            USO.Open USO.High USO.Low USO.Close USO.Volume USO.Adjusted
+    ## 2017-01-03    11.98    12.00   11.36     11.44   36183500        11.44
+    ## 2017-01-04    11.42    11.63   11.36     11.58   18067800        11.58
+    ## 2017-01-05    11.69    11.79   11.51     11.70   21346700        11.70
+    ## 2017-01-06    11.76    11.81   11.62     11.68   15279600        11.68
+    ## 2017-01-09    11.52    11.53   11.30     11.31   20055400        11.31
+    ## 2017-01-10    11.37    11.37   11.07     11.07   23861600        11.07
+
+    ##               ClCl.USOa    ClCl.VBKa   ClCl.XLVa     ClCl.VNQa
+    ## 2017-01-03           NA           NA          NA            NA
+    ## 2017-01-04  0.012237762  0.017107373 0.007875187  0.0146135140
+    ## 2017-01-05  0.010362694 -0.004774102 0.005114377  0.0032138673
+    ## 2017-01-06 -0.001709402 -0.001180841 0.002826813  0.0001186758
+    ## 2017-01-09 -0.031678082 -0.001034424 0.004228372 -0.0090165143
+    ## 2017-01-10 -0.021220159  0.005991110 0.003508772 -0.0084999283
+    ##               ClCl.VFHa
+    ## 2017-01-03           NA
+    ## 2017-01-04  0.011204047
+    ## 2017-01-05 -0.010914503
+    ## 2017-01-06  0.004012673
+    ## 2017-01-09 -0.008492889
+    ## 2017-01-10  0.004534766
+
+![](Case_HW_files/figure-markdown_strict/Portfolio-1.png)
+
+    ## [1] 102060.3
+
+![](Case_HW_files/figure-markdown_strict/Portfolio-2.png)
+
+    ##               [,1]      [,2]      [,3]      [,4]      [,5]      [,6]
+    ## result.1 100054.02 100982.20 103142.08 102276.44 102159.50 101925.18
+    ## result.2  98782.75  99163.52  98874.01  97769.16  98015.32  98260.97
+    ## result.3 100044.58  99938.58  99685.81 100284.05 100092.65  99720.37
+    ## result.4  99391.97  99760.37  99449.45 100219.87  99756.27  99876.26
+    ## result.5 100299.39 101481.60 101619.50 101467.26 101197.79  99898.59
+    ## result.6  99739.92  98981.45 100244.42  99923.35  99782.30  99034.63
+    ##               [,7]      [,8]      [,9]     [,10]     [,11]     [,12]
+    ## result.1 101611.25 103275.47 103451.16 103684.29 103275.46 103577.77
+    ## result.2  98443.59  97976.10  98517.26  98082.57  98058.80  98791.04
+    ## result.3  98959.86  99607.57  98958.91 100038.76  99836.22  99181.06
+    ## result.4  99977.69 100369.53 100535.43 100803.54 101197.54 102465.51
+    ## result.5  98922.84  98273.72  98335.89  98264.11  96758.87  96995.51
+    ## result.6  98657.78  98923.30  99106.57  99617.25  99400.56  99970.99
+    ##              [,13]     [,14]     [,15]     [,16]     [,17]     [,18]
+    ## result.1 103564.95 105112.90 104538.97 104208.69 104139.12 104289.76
+    ## result.2  98123.27  98487.45  99412.13  99477.23 100761.47 100398.81
+    ## result.3  98891.16  99085.58  99125.70  99741.45  99841.23 100209.56
+    ## result.4 102148.55 102233.23 100942.04  99144.43  99408.91  99169.99
+    ## result.5  97885.66  97871.83  99030.36  99213.78  99148.26 100522.43
+    ## result.6 101004.75 101183.53 100831.40 101379.88 101932.22 100063.80
+    ##              [,19]     [,20]
+    ## result.1 104478.87 103710.57
+    ## result.2  99357.06  99951.57
+    ## result.3  99748.81 100445.16
+    ## result.4  99026.71  98900.78
+    ## result.5 102178.37 103163.50
+    ## result.6 100290.84  99829.43
+
+![](Case_HW_files/figure-markdown_strict/Portfolio-3.png)
+
+    ## [1] 100856.7
+
+![](Case_HW_files/figure-markdown_strict/Portfolio-4.png)
+
+VaR stands for value at risk, and this metric shows the risk of loss for
+an investment on a distribution. We calculated the VaR distribution for
+three different types of portfolios were tested for our portfolio
+modeling: a balanced, an aggressive, and a conservative portfolio.
+
+The aggressive portfolio is composed of small cap growth stock ETF’s,
+which means that it is focused on smaller stocks with potential. This is
+more risky because small cap companies have a larger chance of going
+under and are less stable than their large cap stock counterparts. As
+expected, the 5% VaR for the aggressive portfolio is the worst and is
+-$8000.
+
+The conservative portfolio is mainly made up of different types of bond
+and money market ETF’s, which are one of the safest types of investments
+you can make on the financial market. Many of these are either mortgage
+or government backed bonds, therefore they are collateralized and this
+limits your risk significantly. The 5% VaR for the conservative
+portfolio is the best and is only -$1000.
+
+The balanced portfolio contains a wide range of financial products from
+across the spectrum. These products contain ETF’s from a wide range of
+industries, such as oil and real estate. This spectrum of different
+industries helps to balance out the portfolio, and mostly Vanguard
+products were chosen for their strong returns and good past performance,
+in order to help balance out the risk of this portfolio. A healthcare
+ETF is super stable as well, which is why one of these ETF’s was
+included in the portfolio too. The 5% VaR for the balanced portfolio is
+about -$5000.
+
+The VaR distributions for each portfolio came out as expected, with the
+conservative portfolio being the least risky and the aggressive
+portfolio being the most.
+
 Market Segmentation
 -------------------
 
@@ -100,10 +197,15 @@ training set so we proceed with the first 600 principal components.
 We obtain results for variations of two types of models: KNN and Random
 Forest. The prediction accuracies for each variant are listed below:
 
-**KNN with cosine distance:** 55.24% **KNN with cosine distance of first
-600 principal components:** 58.08% **Random Forest:** 60.48% **Random
-Forest on first 600 principal components:** **Random Forest with
-m=sqrt(p):** 62.36%
+**KNN with cosine distance:** 55.24%
+
+**KNN with cosine distance of first 600 principal components:** 58.08%
+
+**Random Forest:** 60.48%
+
+**Random Forest on first 600 principal components:** 55.28%
+
+**Random Forest with m=sqrt(p):** 62.36%
 
 As can be seen from the results above, our random forest model with
 m=sqrt(p)=37 and no dimensionality reduction yielded the best
@@ -128,20 +230,6 @@ for more nuanced TF-IDF values in our DTMs.
 Association Rule Mining
 -----------------------
 
-    library(tidyverse)
-    library(arules)  # has a big ecosystem of packages built around it
-    library(arulesViz)
-    library(igraph)
-    setwd("~/Grad School/Summer/Predictive Modeling/Second_Half/Homework/STA380_Case_Studies")
-    #read .txt file in basket format
-    groceries = read.transactions("./data/groceries.txt", format="basket", sep=",")
-
-    ## Cast this variable as a special arules "transactions" class.
-    transactions = as(groceries, "transactions")
-
-    #run the apriori algorithm
-    apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.5, maxlen=3))
-
     ## Apriori
     ## 
     ## Parameter specification:
@@ -157,49 +245,12 @@ Association Rule Mining
     ## Absolute minimum support count: 98 
     ## 
     ## set item appearances ...[0 item(s)] done [0.00s].
-    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].
     ## sorting and recoding items ... [88 item(s)] done [0.00s].
     ## creating transaction tree ... done [0.00s].
     ## checking subsets of size 1 2 3 done [0.00s].
     ## writing ... [15 rule(s)] done [0.00s].
     ## creating S4 object  ... done [0.00s].
-
-    #view results
-    inspect(apriori_results)
-
-    ##      lhs                     rhs                   support confidence     lift count
-    ## [1]  {curd,                                                                         
-    ##       yogurt}             => {whole milk}       0.01006609  0.5823529 2.279125    99
-    ## [2]  {butter,                                                                       
-    ##       other vegetables}   => {whole milk}       0.01148958  0.5736041 2.244885   113
-    ## [3]  {domestic eggs,                                                                
-    ##       other vegetables}   => {whole milk}       0.01230300  0.5525114 2.162336   121
-    ## [4]  {whipped/sour cream,                                                           
-    ##       yogurt}             => {whole milk}       0.01087951  0.5245098 2.052747   107
-    ## [5]  {other vegetables,                                                             
-    ##       whipped/sour cream} => {whole milk}       0.01464159  0.5070423 1.984385   144
-    ## [6]  {other vegetables,                                                             
-    ##       pip fruit}          => {whole milk}       0.01352313  0.5175097 2.025351   133
-    ## [7]  {citrus fruit,                                                                 
-    ##       root vegetables}    => {other vegetables} 0.01037112  0.5862069 3.029608   102
-    ## [8]  {root vegetables,                                                              
-    ##       tropical fruit}     => {other vegetables} 0.01230300  0.5845411 3.020999   121
-    ## [9]  {root vegetables,                                                              
-    ##       tropical fruit}     => {whole milk}       0.01199797  0.5700483 2.230969   118
-    ## [10] {tropical fruit,                                                               
-    ##       yogurt}             => {whole milk}       0.01514997  0.5173611 2.024770   149
-    ## [11] {root vegetables,                                                              
-    ##       yogurt}             => {other vegetables} 0.01291307  0.5000000 2.584078   127
-    ## [12] {root vegetables,                                                              
-    ##       yogurt}             => {whole milk}       0.01453991  0.5629921 2.203354   143
-    ## [13] {rolls/buns,                                                                   
-    ##       root vegetables}    => {other vegetables} 0.01220132  0.5020921 2.594890   120
-    ## [14] {rolls/buns,                                                                   
-    ##       root vegetables}    => {whole milk}       0.01270971  0.5230126 2.046888   125
-    ## [15] {other vegetables,                                                             
-    ##       yogurt}             => {whole milk}       0.02226741  0.5128806 2.007235   219
-
-    inspect(subset(apriori_results, subset=lift > 2))
 
     ##      lhs                     rhs                   support confidence     lift count
     ## [1]  {curd,                                                                         
@@ -230,3 +281,5 @@ Association Rule Mining
     ##       root vegetables}    => {whole milk}       0.01270971  0.5230126 2.046888   125
     ## [14] {other vegetables,                                                             
     ##       yogurt}             => {whole milk}       0.02226741  0.5128806 2.007235   219
+
+Write-up here
