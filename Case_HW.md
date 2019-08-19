@@ -16,20 +16,6 @@ Visual Story Telling Part 1: Green Buildings
 Visual Story Telling Part 2: Flights at ABIA
 --------------------------------------------
 
-    library(mosaic)
-    library(tidyverse)
-
-    month_arrival_avg=read.csv('./data/Month-Arrival-Avg.csv')
-    month_dep_avg=read.csv('./data/Month-Departure-Avg.csv')
-
-    months=c('1','2','3','4','5','6','7','8','9','10','11','12')
-
-    ggplot(data = month_dep_avg) + 
-      geom_col(mapping = aes(x = Month, y = DepDelay)) + 
-      facet_wrap(~ UniqueCarrier, nrow = 5)+
-      labs(title = "Carrier Average Departure Delays by Month")+
-      scale_x_discrete(name='Month',limits=months)
-
 ![](Case_HW_files/figure-markdown_strict/ABIA%20Departures-1.png)
 
     ggplot(data = month_arrival_avg) + 
@@ -43,69 +29,9 @@ Visual Story Telling Part 2: Flights at ABIA
 Portfolio Modeling
 ------------------
 
-    ##            USO.Open USO.High USO.Low USO.Close USO.Volume USO.Adjusted
-    ## 2017-01-03    11.98    12.00   11.36     11.44   36183500        11.44
-    ## 2017-01-04    11.42    11.63   11.36     11.58   18067800        11.58
-    ## 2017-01-05    11.69    11.79   11.51     11.70   21346700        11.70
-    ## 2017-01-06    11.76    11.81   11.62     11.68   15279600        11.68
-    ## 2017-01-09    11.52    11.53   11.30     11.31   20055400        11.31
-    ## 2017-01-10    11.37    11.37   11.07     11.07   23861600        11.07
-
-    ##               ClCl.USOa    ClCl.VBKa   ClCl.XLVa     ClCl.VNQa
-    ## 2017-01-03           NA           NA          NA            NA
-    ## 2017-01-04  0.012237762  0.017107373 0.007875187  0.0146135140
-    ## 2017-01-05  0.010362694 -0.004774102 0.005114377  0.0032138673
-    ## 2017-01-06 -0.001709402 -0.001180841 0.002826813  0.0001186758
-    ## 2017-01-09 -0.031678082 -0.001034424 0.004228372 -0.0090165143
-    ## 2017-01-10 -0.021220159  0.005991110 0.003508772 -0.0084999283
-    ##               ClCl.VFHa
-    ## 2017-01-03           NA
-    ## 2017-01-04  0.011204047
-    ## 2017-01-05 -0.010914503
-    ## 2017-01-06  0.004012673
-    ## 2017-01-09 -0.008492889
-    ## 2017-01-10  0.004534766
-
-![](Case_HW_files/figure-markdown_strict/Portfolio-1.png)
-
-    ## [1] 102060.3
-
-![](Case_HW_files/figure-markdown_strict/Portfolio-2.png)
-
-    ##               [,1]      [,2]      [,3]      [,4]      [,5]      [,6]
-    ## result.1 100054.02 100982.20 103142.08 102276.44 102159.50 101925.18
-    ## result.2  98782.75  99163.52  98874.01  97769.16  98015.32  98260.97
-    ## result.3 100044.58  99938.58  99685.81 100284.05 100092.65  99720.37
-    ## result.4  99391.97  99760.37  99449.45 100219.87  99756.27  99876.26
-    ## result.5 100299.39 101481.60 101619.50 101467.26 101197.79  99898.59
-    ## result.6  99739.92  98981.45 100244.42  99923.35  99782.30  99034.63
-    ##               [,7]      [,8]      [,9]     [,10]     [,11]     [,12]
-    ## result.1 101611.25 103275.47 103451.16 103684.29 103275.46 103577.77
-    ## result.2  98443.59  97976.10  98517.26  98082.57  98058.80  98791.04
-    ## result.3  98959.86  99607.57  98958.91 100038.76  99836.22  99181.06
-    ## result.4  99977.69 100369.53 100535.43 100803.54 101197.54 102465.51
-    ## result.5  98922.84  98273.72  98335.89  98264.11  96758.87  96995.51
-    ## result.6  98657.78  98923.30  99106.57  99617.25  99400.56  99970.99
-    ##              [,13]     [,14]     [,15]     [,16]     [,17]     [,18]
-    ## result.1 103564.95 105112.90 104538.97 104208.69 104139.12 104289.76
-    ## result.2  98123.27  98487.45  99412.13  99477.23 100761.47 100398.81
-    ## result.3  98891.16  99085.58  99125.70  99741.45  99841.23 100209.56
-    ## result.4 102148.55 102233.23 100942.04  99144.43  99408.91  99169.99
-    ## result.5  97885.66  97871.83  99030.36  99213.78  99148.26 100522.43
-    ## result.6 101004.75 101183.53 100831.40 101379.88 101932.22 100063.80
-    ##              [,19]     [,20]
-    ## result.1 104478.87 103710.57
-    ## result.2  99357.06  99951.57
-    ## result.3  99748.81 100445.16
-    ## result.4  99026.71  98900.78
-    ## result.5 102178.37 103163.50
-    ## result.6 100290.84  99829.43
-
-![](Case_HW_files/figure-markdown_strict/Portfolio-3.png)
-
     ## [1] 100856.7
 
-![](Case_HW_files/figure-markdown_strict/Portfolio-4.png)
+![](Case_HW_files/figure-markdown_strict/Output-1.png)
 
 VaR stands for value at risk, and this metric shows the risk of loss for
 an investment on a distribution. We calculated the VaR distribution for
@@ -230,6 +156,9 @@ for more nuanced TF-IDF values in our DTMs.
 Association Rule Mining
 -----------------------
 
+The output of the apriori algorithm on the groceries.txt file is shown
+below:
+
     ## Apriori
     ## 
     ## Parameter specification:
@@ -245,7 +174,7 @@ Association Rule Mining
     ## Absolute minimum support count: 98 
     ## 
     ## set item appearances ...[0 item(s)] done [0.00s].
-    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
     ## sorting and recoding items ... [88 item(s)] done [0.00s].
     ## creating transaction tree ... done [0.00s].
     ## checking subsets of size 1 2 3 done [0.00s].
@@ -282,4 +211,4 @@ Association Rule Mining
     ## [14] {other vegetables,                                                             
     ##       yogurt}             => {whole milk}       0.02226741  0.5128806 2.007235   219
 
-Write-up here
+The above output shows the results of

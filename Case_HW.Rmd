@@ -22,7 +22,7 @@ library(mosaic)
 green = read.csv('./data/greenbuildings.csv')
 ```
 ## Visual Story Telling Part 2: Flights at ABIA
-```{r ABIA Departures, message=FALSE, warning=FALSE}
+```{r ABIA Departures, echo=FALSE, message=FALSE, warning=FALSE}
 library(mosaic)
 library(tidyverse)
 
@@ -49,7 +49,7 @@ ggplot(data = month_arrival_avg) +
 ```
 
 ## Portfolio Modeling
-```{r Portfolio, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Portfolio, message=FALSE, warning=FALSE, include=FALSE}
 library(mosaic)
 library(quantmod)
 library(foreach)
@@ -136,6 +136,8 @@ sim1 = foreach(i=1:5000, .combine='rbind') %do% {
 head(sim1)
 hist(sim1[,n_days], 25)
 
+```
+```{r Output, echo=FALSE, message=FALSE, warning=FALSE}
 # Profit/loss
 mean(sim1[,n_days])
 hist(sim1[,n_days]- initial_wealth, breaks=30)
@@ -384,6 +386,8 @@ Our team tried to use Naive Bayes and BART to classify the articles, but ran int
 Further, the best way to improve our classification accuracies would be to have more robust preprocessing. For example, we could create a dummy "unknown" variable in our test DTM that would count the number of words that show up in our test set that didn't appear in our training set. Our above test DTM simply ignore new words in the test set, which likely decreases performance. We could also consider n-gram groupings of words for more nuanced TF-IDF values in our DTMs.
 
 ## Association Rule Mining
+
+The output of the apriori algorithm on the groceries.txt file is shown below:
 ```{r Association Rule Mining, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(arules)  # has a big ecosystem of packages built around it
@@ -403,4 +407,4 @@ apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.
 inspect(subset(apriori_results, subset=lift > 2))
 ```
 
-Write-up here
+The above output shows the results of 
