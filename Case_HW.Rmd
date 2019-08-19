@@ -57,7 +57,7 @@ ggplot(data = month_arrival_avg) +
 
 ```
 ## Author Attribution
-```{r getDTMTrain, message=FALSE, warning=FALSE}
+```{r getDTMTrain, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(tm)
 library(tidyverse)
 setwd("~/Grad School/Summer/Predictive Modeling/Second_Half/Homework/STA380_Case_Studies")
@@ -106,8 +106,7 @@ class(DTM_train)  # a special kind of sparse matrix format
 DTM_train = removeSparseTerms(DTM_train, 0.975)
 tfidf_mat_train = weightTfIdf(DTM_train)
 ```
-
-```{r getDTMTest}
+```{r getDTMTest, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 author_dirs_test = Sys.glob('./data/ReutersC50/C50test/*')
 file_list_test = NULL
 labels_test = NULL
@@ -148,20 +147,27 @@ DTM_test = DocumentTermMatrix(my_corpus_test,control = list(dictionary=Terms(DTM
 
 tfidf_mat_test = weightTfIdf(DTM_test)
 ```
-```{r}
+```{r Prediction Setup, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(class)
 train_X = as.matrix(tfidf_mat_train)
 train_y = labels_train
 test_X = as.matrix(tfidf_mat_test)
 test_y = labels_test
 ```
-```{r PCA}
+```{r PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 train_X_centered = scale(train_X, center=TRUE, scale=FALSE)
 test_X_centered = scale(test_X, center = TRUE, scale=FALSE)
 
+#scrub_cols = which(colSums(X) == 0)
+#X = X[,-scrub_cols]
+
+pca_train = prcomp(train_X_centered)
+pca_test <- predict(pca_train, newdata = test_X_centered)
+pca_test <- as.data.frame(pca_test)
+
 
 ```
-```{r KNN}
+```{r KNN, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 cosine_dist_train = proxy::dist(train_X, method='cosine')
 cosine_dist_test = proxy::dist(test_X,method='cosine')
 
@@ -172,9 +178,83 @@ accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
 accuracy(tab)
 #55.24%
 ```
-```{r}
+```{r KNN on PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+pca_cosine_dist_train = proxy::dist(pca_train$x[,1:600], method='cosine')
+pca_cosine_dist_test = proxy::dist(pca_test[,1:600],method='cosine')
 
+knn.pred=knn(pca_cosine_dist_train,pca_cosine_dist_test,train_y,k=7) 
+tab = table(knn.pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab)
 ```
+```{r Random Forest, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(randomForest)
+set.seed(1)
+#factorize response labels
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#fit random forest
+classifier <- randomForest(x = train_X, 
+                           y = train_y_fact,
+                           nTree = 10)
+
+rand_forest_pred <- predict(classifier, newdata = test_X)
+tab_rf = table(rand_forest_pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf)
+```
+```{r Random Forest with PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(randomForest)
+set.seed(1)
+#factorize response labels
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#fit random forest
+classifier2 <- randomForest(x = pca_train$x[,1:600], 
+                           y = train_y_fact,
+                           nTree = 20)
+
+rand_forest_pca_pred <- predict(classifier2, newdata = pca_test[,1:600])
+tab_rf = table(rand_forest_pca_pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf)
+```
+```{r Random Forest with Parameter Tuning, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#sqrt(1411) = 37
+rf=randomForest(x=train_X,y=train_y_fact, mtry=37,importance=TRUE)
+
+rand_forest_pred2 <- predict(rf, newdata = test_X)
+tab_rf2 = table(rand_forest_pred2,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf2)
+```
+
+
+Our analysis of the author text data consisted of the following framework:
+
+**1. Preprocessing of the training set**
+
+**2. Preprocessing of the test set**
+
+**3. Organization of training and testing variables (feature matrices and target vectors)**
+
+**4. PCA setup to allow for dimension reduction during modeling**
+
+**5. Modeling and results**
+
+Below, we dive into our processes for each of the above items.
+
+
+### PREPROCESSING OF THE TRAINING SET
+
+This section contains the bulk of the work done for this problem. 
+
 ## Association Rule Mining
 ```{r Association Rule Mining, message=FALSE, warning=FALSE}
 library(tidyverse)
