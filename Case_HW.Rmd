@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **Kevin Brill, Ananya Garg, Hannah Ho, Shane Kok**
 
-Maybe a little intro here before we get into the code.
+Below are the results of our team's work on Dr. Scott's STA380 Predictive Modeling exercises.
 
 ## Visual Story Telling Part 1: Green Buildings
 
@@ -108,11 +108,11 @@ tfidf_mat_train = weightTfIdf(DTM_train)
 ```
 
 ```{r getDTMTest}
-author_dirs_test = Sys.glob('../data/ReutersC50/C50test/*')
+author_dirs_test = Sys.glob('./data/ReutersC50/C50test/*')
 file_list_test = NULL
 labels_test = NULL
 for(author in author_dirs_test) {
-  author_name = substring(author, first=28) #author name starts at 29th char
+  author_name = substring(author, first=27) #author name starts at 29th char
   files_to_add = Sys.glob(paste0(author, '/*.txt'))
   file_list_test = append(file_list_test, files_to_add)
   labels_test = append(labels_test, rep(author_name, length(files_to_add)))
@@ -126,7 +126,7 @@ names(all_docs_test) = sub('.txt', '', names(all_docs_test))
 # Clean up the file names, append author to filename
 # This uses the piping operator from magrittr
 # See https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html
-mynames_test = file_list %>%
+mynames_test = file_list_test %>%
   { strsplit(., '/', fixed=TRUE) } %>%
   { lapply(., tail, n=2) } %>%
   { lapply(., paste0, collapse = '') } %>%
@@ -142,24 +142,58 @@ my_corpus_test = tm_map(my_corpus_test, content_transformer(removePunctuation)) 
 my_corpus_test = tm_map(my_corpus_test, content_transformer(stripWhitespace)) ## remove excess white-space
 my_corpus_test = tm_map(my_corpus_test, content_transformer(removeWords), stopwords("SMART"))
 
-DTM_test = DocumentTermMatrix(my_corpus_test)
-DTM_test # some basic summary statistics
-
 # A suboptimal but practical solution: IGNORE words you haven't seen before
 # can do this by pre-specifying a dictionary in the construction of a DTM
-DTM_test = DocumentTermMatrix(my_corpus_test,
-                        control =list(dictionary=Terms(DTM)))
+DTM_test = DocumentTermMatrix(my_corpus_test,control = list(dictionary=Terms(DTM_train)))
+
+tfidf_mat_test = weightTfIdf(DTM_test)
 ```
 ```{r}
 library(class)
 train_X = as.matrix(tfidf_mat_train)
 train_y = labels_train
+test_X = as.matrix(tfidf_mat_test)
+test_y = labels_test
+```
+```{r PCA}
+train_X_centered = scale(train_X, center=TRUE, scale=FALSE)
+test_X_centered = scale(test_X, center = TRUE, scale=FALSE)
+
+
+```
+```{r KNN}
+cosine_dist_train = proxy::dist(train_X, method='cosine')
+cosine_dist_test = proxy::dist(test_X,method='cosine')
+
+knn.pred=knn(cosine_dist_train,cosine_dist_test,train_y,k=5) 
+tab = table(knn.pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab)
+#55.24%
 ```
 ```{r}
 
 ```
 ## Association Rule Mining
 ```{r Association Rule Mining, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(arules)  # has a big ecosystem of packages built around it
+library(arulesViz)
+library(igraph)
+setwd("~/Grad School/Summer/Predictive Modeling/Second_Half/Homework/STA380_Case_Studies")
+#read .txt file in basket format
+groceries = read.transactions("./data/groceries.txt", format="basket", sep=",")
 
+## Cast this variable as a special arules "transactions" class.
+transactions = as(groceries, "transactions")
+
+#run the apriori algorithm
+apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.5, maxlen=3))
+
+#view results
+inspect(apriori_results)
+
+inspect(subset(apriori_results, subset=lift > 2))
 ```
 
