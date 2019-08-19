@@ -9,9 +9,74 @@ Predictive Modeling exercises.
 Visual Story Telling Part 1: Green Buildings
 --------------------------------------------
 
-    library(mosaic)
+![](Case_HW_files/figure-markdown_strict/GreenBuilding-1.png)![](Case_HW_files/figure-markdown_strict/GreenBuilding-2.png)
+Class ‘A’ green status buildings charge lower mean rents per square
+foot, implying that green status is not correlated with premium rates
+when compared with buildings of a similar class. It might look like
+class c green buldings can charge a higher rent. However, there are so
+few class b and c green buildings in the dataset that the premium is
+unlikely to carry statistical significance.
 
-    green = read.csv('./data/greenbuildings.csv')
+Given that there is no premium for green status after holding class
+constant and most green buildings are class ‘A’ buildings, we will
+investigate whether there is a premium charged for class ‘A’ buildings.
+![](Case_HW_files/figure-markdown_strict/green2-1.png) Most class ‘A’
+buildings are not located in particularly expensive cluster rents. This
+means that the apparent premium on green buildings are not coming from
+being located in nicer areas as signalled by having higher rents
+overall. ![](Case_HW_files/figure-markdown_strict/green3-1.png) green
+buildings have a higher rent across all kinds of cooling days (barring
+1000-2000 days), so we can conclude that no of cooling days does not
+contribute to the rent of the building
+![](Case_HW_files/figure-markdown_strict/green4-1.png) From the graph we
+see that green\_rated buildings charga a higher rent when:
+
+1.  The no of heating degree days are low, implying that the region is
+    hot, or warm enough to not require heating.
+
+2.  The no of heating degree days are high, implying that there is a
+    need for heating on most days. This implies that the savings in
+    energy costs are higher than the rent of a green building
+
+In places with heating degree days between 2000-5000, green buildings
+are in fact commanding a lower rent One reason for this could be that
+for places which are moderately cold, the savings in energy costs are
+higher than the rent of a green building. We need to check with the
+total no of degree days to further understand the correlation between
+these phenomenon. ![](Case_HW_files/figure-markdown_strict/green5-1.png)
+We can now confidently say that (a) in places that have less than 5000
+degree days (moderate temperatures) and (b) places that have more than
+8000 degree days (extreme temperatures), green buildings charge a higher
+rent. For (b), we can hypothesise the reason for higher rent is the
+savings in energy costs. We will not hold the degree days constant and
+check if there is another feature that can attributed to the variation
+in rent.
+
+Feature 1: class of the building
+
+It is possible that because buildings with degree days &gt; 2000 are
+better built, and hence charge a premium rent
+![](Case_HW_files/figure-markdown_strict/green6-1.png)![](Case_HW_files/figure-markdown_strict/green6-2.png)
+This is telling us for sure that there is a higher rent asscociated with
+a green building, if it is class\_a and in an area with degree days &gt;
+8000 ![](Case_HW_files/figure-markdown_strict/green7-1.png)
+
+Once again, we see that the number of buildings is too low class\_c, to
+understand if the green premium significant enough. So from the next
+graph, we take a look at only the class A and B buildings
+![](Case_HW_files/figure-markdown_strict/green8-1.png) This too assures
+us that there is a green premium for areas with 2000-3000 degree days
+![](Case_HW_files/figure-markdown_strict/green1-1.png)![](Case_HW_files/figure-markdown_strict/green1-2.png)![](Case_HW_files/figure-markdown_strict/green1-3.png)![](Case_HW_files/figure-markdown_strict/green1-4.png)
+Within class ‘A’ buildings, investing in a green building is not
+associated with being able to charge higher rents. However, we see that
+the no. of degree days is correlated with the green premium on the rent.
+In all areas with greater than 2000 degree days, we see that across the
+class of the buildings (wherever significant/relevant), the rent is
+higher for green\_rated buildings. Hence we should invest in a green
+building if they are going to be built in areas with a high number of
+degree days (&gt;2000), ie areas with extremes of temperature.
+Conversely, do not invest in green buildings if they are located in
+areas with moderate weather.
 
 Visual Story Telling Part 2: Flights at ABIA
 --------------------------------------------
