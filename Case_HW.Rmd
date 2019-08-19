@@ -39,7 +39,7 @@ ggplot(data = month_dep_avg) +
 
 ```
 
-```{r ABIA Arrivals, message=FALSE, warning=FALSE}
+```{r ABIA Arrivals, echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(data = month_arrival_avg) + 
   geom_col(mapping = aes(x = Month, y = ArrDelay)) + 
   facet_wrap(~ UniqueCarrier, nrow = 5)+ 
@@ -47,6 +47,8 @@ ggplot(data = month_arrival_avg) +
   scale_x_discrete(name='Month',limits=months)
 
 ```
+
+Our visualizations depict the average monthly arrival and departure delays, in terms of minutes, for all the airlines that fly into the Austin Airport. Therefore, it shows which airlines are the best for flying into and departing the Austin Airport, for a specific month, if you want to minimize your chance of delays. 
 
 ## Portfolio Modeling
 ```{r Portfolio, message=FALSE, warning=FALSE, include=FALSE}
@@ -135,11 +137,10 @@ sim1 = foreach(i=1:5000, .combine='rbind') %do% {
 
 head(sim1)
 hist(sim1[,n_days], 25)
-
-```
-```{r Output, echo=FALSE, message=FALSE, warning=FALSE}
-# Profit/loss
 mean(sim1[,n_days])
+```
+```{r ETF Output, echo=FALSE, message=FALSE, warning=FALSE}
+# Profit/loss
 hist(sim1[,n_days]- initial_wealth, breaks=30)
 ```
 
@@ -154,9 +155,116 @@ The balanced portfolio contains a wide range of financial products from across t
 The VaR distributions for each portfolio came out as expected, with the conservative portfolio being the least risky and the aggressive portfolio being the most. 
 
 ## Market Segmentation
-```{r Market Segmentation, message=FALSE, warning=FALSE}
+```{r Market Segmentation, message=FALSE, warning=FALSE, include=FALSE}
+# Import libraries
+library(flexclust)
+library(ggplot2)
+# Import data
+twitter = read.csv("./data/social_marketing.csv",header=TRUE,row.names=1)
+
+head(twitter, 2)
+
+#Removing unnecessary categories (spam, adult, uncategorized, chatter)
+twitter = twitter[,c(-1,-5,-35,-36)]
+
+#Normalize data
+twitter_freq = twitter/rowSums(twitter)
+
+
+#Run PCA
+pc2 = prcomp(twitter_freq, scale=TRUE)
+loadings = pc2$rotation
+scores = pc2$x
+plot(pc2) 
+
+#Print importance of components
+summary(pc2)
 
 ```
+```{r Market Output, echo=FALSE, message=FALSE, warning=FALSE}
+#This cluster looks like a parent (school, parenting, religion, food)
+o1 = order(loadings[,1])
+colnames(twitter_freq)[tail(o1,5)]
+
+#Someone that is active and healthy (outdoors, personal fitness, health and nutrition)
+o2 = order(loadings[,2])
+colnames(twitter_freq)[tail(o2,5)]
+
+#Young female in school or a young mother (beauty and fashion)
+o3 = order(loadings[,3])
+colnames(twitter_freq)[tail(o3,5)]
+
+#Young male student (sports playing and online gaming)
+o4 = order(loadings[,4])
+colnames(twitter_freq)[tail(o4,5)]
+
+#Young homemaker (home and garden, eco, crafts, shopping)
+o5 = order(loadings[,5])
+colnames(twitter_freq)[tail(o5,6)]
+
+#Young dad (sports playing, family, online gaming, automotive)
+o6 = order(loadings[,6])
+colnames(twitter_freq)[tail(o6,6)]
+
+#Teenager or young adult (music, art, tv film)
+o7 = order(loadings[,7])
+colnames(twitter_freq)[tail(o7,5)]
+
+#Millenials spending on experiences (travel, family, music)
+o8 = order(loadings[,8])
+colnames(twitter_freq)[tail(o8,5)]
+
+#Starting entrepreneur (small business, business)
+o9 = order(loadings[,9])
+colnames(twitter_freq)[tail(o9,5)]
+
+#Hippies (music, dating, home and garden)
+o10 = order(loadings[,10])
+colnames(twitter_freq)[tail(o10,5)]
+
+#Artistic business person (art, family, business)
+o11 = order(loadings[,11])
+colnames(twitter_freq)[tail(o11,5)]
+
+#We do not think the following clusters aren't representative of any new market segments
+o12 = order(loadings[,12])
+colnames(twitter_freq)[tail(o12,4)]
+o13 = order(loadings[,13])
+colnames(twitter_freq)[tail(o13,5)]
+o14 = order(loadings[,14])
+colnames(twitter_freq)[tail(o14,5)]
+o15 = order(loadings[,15])
+colnames(twitter_freq)[tail(o15,6)]
+```
+
+The following market segments were identified from our principal component analysis of the Twitter social marketing data:
+
+1.	parents
+
+2.	active and healthy individuals
+
+3.	young females in school or young mothers
+
+4.	young male students
+
+5.	young homemakers
+
+6.	young fathers
+
+7.	teenagers or young adults
+
+8.	millennials
+
+9.	budding entrepreneurs
+
+10.	hippies
+
+11.	artistic business people
+
+Further segments were developed, but they did not representative of any new market segments.
+These segments were created based on topics of interest from their tweets.
+The R code comments have identified groupings of significant topics that most explain the above categories that we have developed.
+
 ## Author Attribution
 ```{r getDTMTrain, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(tm)
@@ -404,7 +512,17 @@ transactions = as(groceries, "transactions")
 apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.5, maxlen=3))
 
 #view results
-inspect(subset(apriori_results, subset=lift > 2))
+arules::inspect(subset(apriori_results, subset=lift > 2))
 ```
 
-The above output shows the results of 
+The above output shows the results of the apriori algorithm with the following parameters:
+
+support = 0.01
+
+confidence = 0.5
+
+lift > 2
+
+This means that for each association rule, X => Y, at least 1% of all baskets contain X and Y and 50% of all baskets that contain X also contain Y. Finally, setting lift > 2 strengthens our association rules by accounting for the conditional probabilities between X and Y. 
+
+From our above association rules, we see that people who buy various combinations of fruits, vegetables, and dairy products also tend to buy whole milk and other vegetables. It makes sense that people who buy healthy foods would tend to also buy whole milk because there are many organizations that recommend adults to drink up to 3 cups of milk a day (livestrong.com and americanbonehealth.org). Thus, it appears that people who care enough about their health to eat plenty of fruits and vegetables also care enough about their health to drink plenty of milk.

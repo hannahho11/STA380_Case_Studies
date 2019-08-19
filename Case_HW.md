@@ -18,20 +18,18 @@ Visual Story Telling Part 2: Flights at ABIA
 
 ![](Case_HW_files/figure-markdown_strict/ABIA%20Departures-1.png)
 
-    ggplot(data = month_arrival_avg) + 
-      geom_col(mapping = aes(x = Month, y = ArrDelay)) + 
-      facet_wrap(~ UniqueCarrier, nrow = 5)+ 
-      labs(title = "Carrier Average Arrival Delays by Month")+
-      scale_x_discrete(name='Month',limits=months)
-
 ![](Case_HW_files/figure-markdown_strict/ABIA%20Arrivals-1.png)
+
+Our visualizations depict the average monthly arrival and departure
+delays, in terms of minutes, for all the airlines that fly into the
+Austin Airport. Therefore, it shows which airlines are the best for
+flying into and departing the Austin Airport, for a specific month, if
+you want to minimize your chance of delays.
 
 Portfolio Modeling
 ------------------
 
-    ## [1] 100856.7
-
-![](Case_HW_files/figure-markdown_strict/Output-1.png)
+![](Case_HW_files/figure-markdown_strict/ETF%20Output-1.png)
 
 VaR stands for value at risk, and this metric shows the risk of loss for
 an investment on a distribution. We calculated the VaR distribution for
@@ -68,6 +66,79 @@ portfolio being the most.
 
 Market Segmentation
 -------------------
+
+    ## [1] "school"        "food"          "parenting"     "religion"     
+    ## [5] "sports_fandom"
+
+    ## [1] "religion"         "food"             "outdoors"        
+    ## [4] "personal_fitness" "health_nutrition"
+
+    ## [1] "school"        "photo_sharing" "cooking"       "beauty"       
+    ## [5] "fashion"
+
+    ## [1] "food"           "tv_film"        "sports_playing" "online_gaming" 
+    ## [5] "college_uni"
+
+    ## [1] "home_and_garden" "crafts"          "eco"             "current_events" 
+    ## [5] "photo_sharing"   "shopping"
+
+    ## [1] "sports_playing" "family"         "online_gaming"  "shopping"      
+    ## [5] "photo_sharing"  "automotive"
+
+    ## [1] "music"      "art"        "tv_film"    "news"       "automotive"
+
+    ## [1] "travel"  "family"  "food"    "cooking" "music"
+
+    ## [1] "outdoors"       "dating"         "business"       "small_business"
+    ## [5] "music"
+
+    ## [1] "music"           "dating"          "eco"             "current_events" 
+    ## [5] "home_and_garden"
+
+    ## [1] "art"             "home_and_garden" "current_events"  "family"         
+    ## [5] "business"
+
+    ## [1] "dating"         "crafts"         "current_events" "music"
+
+    ## [1] "business"       "small_business" "family"         "current_events"
+    ## [5] "eco"
+
+    ## [1] "art"             "home_and_garden" "music"           "business"       
+    ## [5] "eco"
+
+    ## [1] "eco"             "family"          "small_business"  "home_and_garden"
+    ## [5] "business"        "crafts"
+
+The following market segments were identified from our principal
+component analysis of the Twitter social marketing data:
+
+1.  parents
+
+2.  active and healthy individuals
+
+3.  young females in school or young mothers
+
+4.  young male students
+
+5.  young homemakers
+
+6.  young fathers
+
+7.  teenagers or young adults
+
+8.  millennials
+
+9.  budding entrepreneurs
+
+10. hippies
+
+11. artistic business people
+
+Further segments were developed, but they did not representative of any
+new market segments. These segments were created based on topics of
+interest from their tweets. The R code comments have identified
+groupings of significant topics that most explain the above categories
+that we have developed.
 
 Author Attribution
 ------------------
@@ -174,7 +245,7 @@ below:
     ## Absolute minimum support count: 98 
     ## 
     ## set item appearances ...[0 item(s)] done [0.00s].
-    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].
     ## sorting and recoding items ... [88 item(s)] done [0.00s].
     ## creating transaction tree ... done [0.00s].
     ## checking subsets of size 1 2 3 done [0.00s].
@@ -211,4 +282,25 @@ below:
     ## [14] {other vegetables,                                                             
     ##       yogurt}             => {whole milk}       0.02226741  0.5128806 2.007235   219
 
-The above output shows the results of
+The above output shows the results of the apriori algorithm with the
+following parameters:
+
+support = 0.01
+
+confidence = 0.5
+
+lift &gt; 2
+
+This means that for each association rule, X =&gt; Y, at least 1% of all
+baskets contain X and Y and 50% of all baskets that contain X also
+contain Y. Finally, setting lift &gt; 2 strengthens our association
+rules by accounting for the conditional probabilities between X and Y.
+
+From our above association rules, we see that people who buy various
+combinations of fruits, vegetables, and dairy products also tend to buy
+whole milk and other vegetables. It makes sense that people who buy
+healthy foods would tend to also buy whole milk because there are many
+organizations that recommend adults to drink up to 3 cups of milk a day
+(livestrong.com and americanbonehealth.org). Thus, it appears that
+people who care enough about their health to eat plenty of fruits and
+vegetables also care enough about their health to drink plenty of milk.
