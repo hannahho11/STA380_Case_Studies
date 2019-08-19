@@ -56,18 +56,74 @@ framework:
 
 **2. Preprocessing of the test set**
 
-**3. Organization of training and testing variables (feature matrices
-and target vectors)**
+**3. PCA setup to allow for dimension reduction during modeling**
 
-**4. PCA setup to allow for dimension reduction during modeling**
+**4. Modeling and results**
 
-**5. Modeling and results**
+**5. Further considerations**
 
 Below, we dive into our processes for each of the above items.
 
-### PREPROCESSING OF THE TRAINING SET
+##### 1. PREPROCESSING OF THE TRAINING SET
 
-This section contains the bulk of the work done for this problem.
+This section contains the bulk of the work done for this problem. We
+began by reading in the raw .txt files and extracting a list of all
+documents and a list of all author names in the training set. We then
+used the list of .txt files to construct the corpus for our problem.
+From this corpus, we convert all letters into lower case, remov all
+numbers; punctuation; and whitespaces, and delete all occurances of
+words that are contained in R’s “SMART” stopwords dictionary. With the
+corpus fully cleaned, we create a DTM out of the corpus and remove all
+words that appear in only 2.5% of documents or fewer. In doing so, we
+guarantee that these rare words won’t be given excessive weight in our
+models and skew our results. Finally, we replace the contents of our DTM
+with the TF-IDF weights of each word rather than simply their counts.
+
+##### 2. PREPROCESSING OF THE TEST SET
+
+In this section, we follow the same processes of the above section on
+the test set of documents, all the way up until we create the DTM. Here,
+we limit the dictionary of the test set’s DTM to the words contained in
+the training set’s DTM dictionary. In doing so, we ensure that both the
+training and testing sets’ DTMs consist of the same set of columns when
+we begin modeling. Finally, we replace the contents of the test DTM with
+the TF-IDF weights of each word (same as above section).
+
+##### 3. PCA SETUP TO ALLOW FOR DIMENSION REDUCTION DURING MODELING
+
+Here, we find the PCAs of the training and testing sets. We find that
+the first 600 principal components explain ~80% of the variance in the
+training set so we proceed with the first 600 principal components.
+
+##### 4. MODELING AND RESULTS
+
+We obtain results for variations of two types of models: KNN and Random
+Forest. The prediction accuracies for each variant are listed below:
+
+**KNN with cosine distance:** 55.24% **KNN with cosine distance of first
+600 principal components:** 58.08% **Random Forest:** 60.48% **Random
+Forest on first 600 principal components:** **Random Forest with
+m=sqrt(p):** 62.36%
+
+As can be seen from the results above, our random forest model with
+m=sqrt(p)=37 and no dimensionality reduction yielded the best
+classification accuracy at 62.36% of articles attributed to the correct
+author.
+
+##### 5. FURTHER CONSIDERATIONS
+
+Our team tried to use Naive Bayes and BART to classify the articles, but
+ran into errors that took too long to debug before the deadline of this
+assignment. It is likely that these modeling techniques would outperform
+our above models.
+
+Further, the best way to improve our classification accuracies would be
+to have more robust preprocessing. For example, we could create a dummy
+“unknown” variable in our test DTM that would count the number of words
+that show up in our test set that didn’t appear in our training set. Our
+above test DTM simply ignore new words in the test set, which likely
+decreases performance. We could also consider n-gram groupings of words
+for more nuanced TF-IDF values in our DTMs.
 
 Association Rule Mining
 -----------------------
@@ -101,7 +157,7 @@ Association Rule Mining
     ## Absolute minimum support count: 98 
     ## 
     ## set item appearances ...[0 item(s)] done [0.00s].
-    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
     ## sorting and recoding items ... [88 item(s)] done [0.00s].
     ## creating transaction tree ... done [0.00s].
     ## checking subsets of size 1 2 3 done [0.00s].
