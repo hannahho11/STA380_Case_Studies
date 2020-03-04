@@ -16,13 +16,212 @@ Below are the results of our team's work on Dr. Scott's STA380 Predictive Modeli
 
 ## Visual Story Telling Part 1: Green Buildings
 
-```{r GreenBuilding, message=FALSE, warning=FALSE}
-library(mosaic)
+```{r GreenBuilding, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(knitr)
+library(reshape2)
+library(plyr)
+library(readxl)
+library(glmnet)
+library(coefplot)
+library(formattable)
+
 
 green = read.csv('./data/greenbuildings.csv')
+#detach(green)
+attach(green)
+green = na.omit(green)
+
+###
+# Plot MEAN RENT of green Status by class
+###
+
+# Groupby preprocessing was performed in python and the resulting dataframe was imported into R
+green_groups = read_excel('./data/class_green_rent_groups.xlsx')
+green_groups = green_groups[,-1]
+green_groups$Rent = round(green_groups$Rent,digits = 2)
+green_groups$green_rating[green_groups$green_rating == 1] <- 'Y'
+green_groups$green_rating[green_groups$green_rating == 0] <- 'N'
+
+ggplot(data = green_groups) +
+  geom_bar(mapping = aes(x=green_groups$class, y=green_groups$Rent, fill=as.factor(green_groups$green_rating)),
+           position="dodge", stat='identity') + 
+  labs(title="Mean Rent of Green Status Buildings by Class", 
+       y="Mean Rent per SqFt ($)",
+       x = "Class",
+       fill="Green Status")
+
+###
+# Plot NUMBER of buildings per green status by class to visualize sample sizes per category
+###
+
+# Groupby preprocessing was performed in python and the resulting dataframe was imported into R
+green_num = read_csv('./data/class_green_rent_counts.csv')
+green_num$green_rating[green_num$green_rating == 1] <- 'Y'
+green_num$green_rating[green_num$green_rating == 0] <- 'N'
+
+ggplot(data = green_num) +
+  geom_bar(mapping = aes(x=green_num$class, y=green_num$CS_PropertyID, fill=as.factor(green_num$green_rating)),
+           position="dodge", stat='identity') + 
+  labs(title="Number of Green Status Buildings by Class", 
+       y="Number of Buildings",
+       x = "Class",
+       fill="Green Status")
 ```
+
+Class 'A' green status buildings charge lower mean rents per square foot,
+implying that green status is not correlated with premium rates when
+compared with buildings of a similar class.
+It might look like class c green buldings can charge a higher rent.
+However, there are so few class b and c green buildings in the dataset that
+the premium is unlikely to carry statistical significance.
+
+Given that there is no premium for green status after holding class constant
+and most green buildings are class 'A' buildings,  we will investigate
+whether there is a premium charged for class 'A' buildings.
+```{r green2, echo=FALSE, message=FALSE, warning=FALSE}
+###
+# Plot number of class 'A' buildings per binned cluster rent
+###
+green_cluster = read_csv('./data/classA_clusterRent.csv')
+
+ggplot(data = green_cluster) +
+  geom_bar(mapping = aes(x=green_cluster$cluster_bin, y=green_cluster$class),
+           position="dodge", stat='identity', fill = 'pink') + 
+  labs(title="Number of Class A Buildings per Cluster Rent",
+       y="Number of Class A Buildings",
+       x = "Cluster Rent")
+```
+
+Most class 'A' buildings are not located in particularly expensive cluster rents.
+This means that the apparent premium on green buildings are not
+coming from being located in nicer areas as signalled by having higher rents
+overall.
+```{r green3, echo=FALSE, message=FALSE, warning=FALSE}
+###
+# Plot Rent of Green Status Buildings by no. of cooling days
+###
+
+pretty_green = read.csv('./data/rentColdDays.csv')
+pretty_green$green_rating_fac <- as.factor(pretty_green$green_rating)
+
+ggplot(data = pretty_green, aes(x = pretty_green$cd_total_07_quantiles, y = pretty_green$Rent_cooling, fill = pretty_green$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+ 
+  labs(title="Rent of Green Status Buildings by no. of cooling days", 
+       y="Rent per SqFt ($)",
+       x = "No. of cooling days",
+       fill="Green Status")
+```
+
+green buildings have a higher rent across all kinds of cooling days (barring 1000-2000 days),
+so we can conclude that no of cooling days does not contribute to the rent of the building
+```{r green4, echo=FALSE}
+ggplot(data = pretty_green, aes(x = pretty_green$hd_total07_quantiles, 
+                                y = pretty_green$Rent_heating, 
+                                fill = pretty_green$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by no. of heating days", 
+       y="Rent per SqFt ($)",
+       x = "No. of Heating days",
+       fill="Green Status")
+```
+
+From the graph we see that green_rated buildings charga a higher rent when:
+
+1. The no of heating degree days are low, implying that the region is hot, or warm enough to not require heating.
+
+2. The no of heating degree days are high, implying that there is a need for heating on most days. This implies that the savings in energy costs are higher than the rent of a green building
+
+In places with heating degree days between 2000-5000, green buildings are in fact commanding a lower rent
+One reason for this could be that for places which are moderately cold, the savings in energy costs are higher than the rent of a green building. We need to check with the total no of degree days to further understand the correlation between these phenomenon.
+```{r green5, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = pretty_green, aes(x = pretty_green$total_dd_07_quantiles, 
+                                y = pretty_green$Rent_total, 
+                                fill = pretty_green$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by no. of degree days", 
+       y="Rent per SqFt ($)",
+       x = "No. of degree",
+       fill="Green Status")
+```
+
+We can now confidently say that (a) in places that have less than 5000 degree days (moderate temperatures) and (b) places that have more than 8000 degree days (extreme temperatures), green buildings charge a higher rent. For (b), we can hypothesise the reason for higher rent is the savings in energy costs. We will not hold the degree days constant and check if there is another feature that can attributed to the variation in rent.
+
+Feature 1: class of the building
+
+It is possible that because buildings with degree days > 2000 are better built, and hence charge a premium rent
+```{r green6, echo=FALSE, message=FALSE, warning=FALSE}
+# holding degree days > 8000 constant
+l <- pretty_green[which(pretty_green$total_dd_07_quantiles == ">8000"),]
+ggplot(data = l, aes(x = l$class, fill = l$green_rating_fac)) +
+  geom_bar(aes(col = l$green_rating_fac), position = position_dodge())
+# We see that the number of buildings is too low forclass_b and class_c, to understand if the green premium
+# significant enough. So from the next graph, we take a look at only the class A buildings
+ggplot(data = l, aes(x = l$class,  y = l$Rent_total,
+                     fill = l$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by class of buildings , for >8000 degree days", 
+       y="Rent per SqFt ($)",
+       x = "Class",
+       fill="Green Status")
+```
+
+This is telling us for sure that there is a higher rent asscociated with a green building, if it is class_a and in an area with degree days > 8000
+```{r green7, echo=FALSE, message=FALSE, warning=FALSE}
+#holding degree days between 2000-3000 constant
+l <- pretty_green[which(pretty_green$total_dd_07_quantiles == "2000-3000"),]
+ggplot(data = l, aes(x = l$class, fill = l$green_rating_fac)) +
+  geom_bar(aes(col = l$green_rating_fac), position = position_dodge())
+```
+
+Once again, we see that the number of buildings is too low class_c, to understand if the green premium significant enough. So from the next graph, we take a look at only the class A and B buildings
+```{r green8, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = l, aes(x = l$class,  y = l$Rent_total,
+                     fill = l$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by class of buildings for degree days between 2000-3000", 
+       y="Rent per SqFt ($)",
+       x = "Class",
+       fill="Green Status")
+```
+
+This too assures us that there is a green premium for areas with 2000-3000 degree days
+```{r green1, echo=FALSE, message=FALSE, warning=FALSE}
+#holding degree days between 3000-4000 constant
+l <- pretty_green[which(pretty_green$total_dd_07_quantiles == "3000-4000"),]
+# by number of buildings in each class
+ggplot(data = l, aes(x = l$class, fill = l$green_rating_fac)) +
+  geom_bar(aes(col = l$green_rating_fac), position = position_dodge())
+# mean rent vs green_rating
+ggplot(data = l, aes(x = l$class,  y = l$Rent_total,
+                     fill = l$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by class of buildings for degree days between 3000-4000", 
+       y="Rent per SqFt ($)",
+       x = "Class",
+       fill="Green Status")
+
+#holding degree days between 4000-5000 constant
+l <- pretty_green[which(pretty_green$total_dd_07_quantiles == "4000-5000"),]
+# by number of buildings in each class
+ggplot(data = l, aes(x = l$class, fill = l$green_rating_fac)) +
+  geom_bar(aes(col = l$green_rating_fac), position = position_dodge())
+# mean rent vs green_rating
+ggplot(data = l, aes(x = l$class,  y = l$Rent_total,
+                     fill = l$green_rating_fac))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  labs(title="Rent of Green Status Buildings by class of buildings for degree days between 4000-5000", 
+       y="Rent per SqFt ($)",
+       x = "Class",
+       fill="Green Status")
+```
+
+Within class 'A' buildings, investing in a green building is not associated with being able to charge higher rents.
+
+However, we see that the no. of degree days is correlated with the green premium on the rent. In all areas with greater than 2000 degree days, we see that across the class of the buildings (wherever significant/relevant), the rent is higher for green_rated buildings. Hence we should invest in a green building if they are going to be built in areas with a high number of degree days (>2000), ie areas with extremes of temperature. Conversely, do not invest in green buildings if they are located in areas with moderate weather.
+
 ## Visual Story Telling Part 2: Flights at ABIA
-```{r ABIA Departures, message=FALSE, warning=FALSE}
+```{r ABIA Departures, echo=FALSE, message=FALSE, warning=FALSE}
 library(mosaic)
 library(tidyverse)
 
@@ -39,7 +238,7 @@ ggplot(data = month_dep_avg) +
 
 ```
 
-```{r ABIA Arrivals, message=FALSE, warning=FALSE}
+```{r ABIA Arrivals, echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(data = month_arrival_avg) + 
   geom_col(mapping = aes(x = Month, y = ArrDelay)) + 
   facet_wrap(~ UniqueCarrier, nrow = 5)+ 
@@ -48,16 +247,225 @@ ggplot(data = month_arrival_avg) +
 
 ```
 
+Our visualizations depict the average monthly arrival and departure delays, in terms of minutes, for all the airlines that fly into the Austin Airport. Therefore, it shows which airlines are the best for flying into and departing the Austin Airport, for a specific month, if you want to minimize your chance of delays. 
+
 ## Portfolio Modeling
-```{r Portfolio, message=FALSE, warning=FALSE}
+```{r Portfolio, message=FALSE, warning=FALSE, include=FALSE}
+library(mosaic)
+library(quantmod)
+library(foreach)
+set.seed(100)
+#BALANCED PORTFOLIO
+#-------------------------------------------------------------------------------
+#### Now use a bootstrap approach
+#### With more stocks
 
+mystocks = c("USO", "VBK", "XLV", "VNQ", "VFH")
+myprices = getSymbols(mystocks, from = "2017-01-01")
+
+
+# A chunk of code for adjusting all stocks
+# creates a new object adding 'a' to the end
+# For example, WMT becomes WMTa, etc
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")") #for loop to adjust the OHLC for each ticker and store into a
+	eval(parse(text=expr))
+}
+
+head(USOa)
+
+# Combine all the returns in a matrix
+all_returns = cbind(	ClCl(USOa),
+								ClCl(VBKa),
+								ClCl(XLVa),
+								ClCl(VNQa),
+								ClCl(VFHa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+
+# Compute the returns from the closing prices
+pairs(all_returns)
+
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.05,0.3,0.05, 0.3, 0.3)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+
+# Compute your new total wealth
+total_wealth = sum(holdings)
+
+
+# Now loop over two trading weeks
+total_wealth = 100000
+weights = c(0.05,0.3,0.05, 0.3, 0.3)
+holdings = weights * total_wealth
+n_days = 20
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+
+
+# Now simulate many different possible scenarios  
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights = c(0.05,0.3,0.05, 0.3, 0.3)
+	holdings = weights * total_wealth
+	n_days = 20
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+
+head(sim1)
+hist(sim1[,n_days], 25)
+mean(sim1[,n_days])
 ```
+```{r ETF Output, echo=FALSE, message=FALSE, warning=FALSE}
+# Profit/loss
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+```
+
+VaR stands for value at risk, and this metric shows the risk of loss for an investment on a distribution. We calculated the VaR distribution for three different types of portfolios were tested for our portfolio modeling: a balanced, an aggressive, and a conservative portfolio. 
+
+The aggressive portfolio is composed of small cap growth stock ETF’s, which means that it is focused on smaller stocks with potential. This is more risky because small cap companies have a larger chance of going under and are less stable than their large cap stock counterparts. As expected, the 5% VaR for the aggressive portfolio is the worst and is -$8000.
+
+The conservative portfolio is mainly made up of different types of bond and money market ETF’s, which are one of the safest types of investments you can make on the financial market. Many of these are either mortgage or government backed bonds, therefore they are collateralized and this limits your risk significantly. The 5% VaR for the conservative portfolio is the best and is only -$1000.
+
+The balanced portfolio contains a wide range of financial products from across the spectrum. These products contain ETF’s from a wide range of industries, such as oil and real estate. This spectrum of different industries helps to balance out the portfolio, and mostly Vanguard products were chosen for their strong returns and good past performance, in order to help balance out the risk of this portfolio. A healthcare ETF is super stable as well, which is why one of these ETF’s was included in the portfolio too. The 5% VaR for the balanced portfolio is about -$5000. 
+
+The VaR distributions for each portfolio came out as expected, with the conservative portfolio being the least risky and the aggressive portfolio being the most. 
+
 ## Market Segmentation
-```{r Market Segmentation, message=FALSE, warning=FALSE}
+```{r Market Segmentation, message=FALSE, warning=FALSE, include=FALSE}
+# Import libraries
+library(flexclust)
+library(ggplot2)
+# Import data
+twitter = read.csv("./data/social_marketing.csv",header=TRUE,row.names=1)
+
+head(twitter, 2)
+
+#Removing unnecessary categories (spam, adult, uncategorized, chatter)
+twitter = twitter[,c(-1,-5,-35,-36)]
+
+#Normalize data
+twitter_freq = twitter/rowSums(twitter)
+
+
+#Run PCA
+pc2 = prcomp(twitter_freq, scale=TRUE)
+loadings = pc2$rotation
+scores = pc2$x
+plot(pc2) 
+
+#Print importance of components
+summary(pc2)
 
 ```
+```{r Market Output, echo=FALSE, message=FALSE, warning=FALSE}
+#This cluster looks like a parent (school, parenting, religion, food)
+o1 = order(loadings[,1])
+colnames(twitter_freq)[tail(o1,5)]
+
+#Someone that is active and healthy (outdoors, personal fitness, health and nutrition)
+o2 = order(loadings[,2])
+colnames(twitter_freq)[tail(o2,5)]
+
+#Young female in school or a young mother (beauty and fashion)
+o3 = order(loadings[,3])
+colnames(twitter_freq)[tail(o3,5)]
+
+#Young male student (sports playing and online gaming)
+o4 = order(loadings[,4])
+colnames(twitter_freq)[tail(o4,5)]
+
+#Young homemaker (home and garden, eco, crafts, shopping)
+o5 = order(loadings[,5])
+colnames(twitter_freq)[tail(o5,6)]
+
+#Young dad (sports playing, family, online gaming, automotive)
+o6 = order(loadings[,6])
+colnames(twitter_freq)[tail(o6,6)]
+
+#Teenager or young adult (music, art, tv film)
+o7 = order(loadings[,7])
+colnames(twitter_freq)[tail(o7,5)]
+
+#Millenials spending on experiences (travel, family, music)
+o8 = order(loadings[,8])
+colnames(twitter_freq)[tail(o8,5)]
+
+#Starting entrepreneur (small business, business)
+o9 = order(loadings[,9])
+colnames(twitter_freq)[tail(o9,5)]
+
+#Hippies (music, dating, home and garden)
+o10 = order(loadings[,10])
+colnames(twitter_freq)[tail(o10,5)]
+
+#Artistic business person (art, family, business)
+o11 = order(loadings[,11])
+colnames(twitter_freq)[tail(o11,5)]
+
+#We do not think the following clusters aren't representative of any new market segments
+o12 = order(loadings[,12])
+colnames(twitter_freq)[tail(o12,4)]
+o13 = order(loadings[,13])
+colnames(twitter_freq)[tail(o13,5)]
+o14 = order(loadings[,14])
+colnames(twitter_freq)[tail(o14,5)]
+o15 = order(loadings[,15])
+colnames(twitter_freq)[tail(o15,6)]
+```
+
+The following market segments were identified from our principal component analysis of the Twitter social marketing data:
+
+1.	parents
+
+2.	active and healthy individuals
+
+3.	young females in school or young mothers
+
+4.	young male students
+
+5.	young homemakers
+
+6.	young fathers
+
+7.	teenagers or young adults
+
+8.	millennials
+
+9.	budding entrepreneurs
+
+10.	hippies
+
+11.	artistic business people
+
+Further segments were developed, but they did not representative of any new market segments.
+These segments were created based on topics of interest from their tweets.
+The R code comments have identified groupings of significant topics that most explain the above categories that we have developed.
+
 ## Author Attribution
-```{r getDTMTrain, message=FALSE, warning=FALSE}
+```{r getDTMTrain, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(tm)
 library(tidyverse)
 setwd("~/Grad School/Summer/Predictive Modeling/Second_Half/Homework/STA380_Case_Studies")
@@ -102,12 +510,10 @@ DTM_train = DocumentTermMatrix(my_corpus_train)
 
 class(DTM_train)  # a special kind of sparse matrix format
 
-## You can inspect its entries...
 DTM_train = removeSparseTerms(DTM_train, 0.975)
 tfidf_mat_train = weightTfIdf(DTM_train)
 ```
-
-```{r getDTMTest}
+```{r getDTMTest, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 author_dirs_test = Sys.glob('./data/ReutersC50/C50test/*')
 file_list_test = NULL
 labels_test = NULL
@@ -148,20 +554,27 @@ DTM_test = DocumentTermMatrix(my_corpus_test,control = list(dictionary=Terms(DTM
 
 tfidf_mat_test = weightTfIdf(DTM_test)
 ```
-```{r}
+```{r Prediction Setup, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(class)
 train_X = as.matrix(tfidf_mat_train)
 train_y = labels_train
 test_X = as.matrix(tfidf_mat_test)
 test_y = labels_test
 ```
-```{r PCA}
+```{r PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 train_X_centered = scale(train_X, center=TRUE, scale=FALSE)
 test_X_centered = scale(test_X, center = TRUE, scale=FALSE)
 
+#scrub_cols = which(colSums(X) == 0)
+#X = X[,-scrub_cols]
+
+pca_train = prcomp(train_X_centered)
+pca_test <- predict(pca_train, newdata = test_X_centered)
+pca_test <- as.data.frame(pca_test)
+
 
 ```
-```{r KNN}
+```{r KNN, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 cosine_dist_train = proxy::dist(train_X, method='cosine')
 cosine_dist_test = proxy::dist(test_X,method='cosine')
 
@@ -172,11 +585,117 @@ accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
 accuracy(tab)
 #55.24%
 ```
-```{r}
+```{r KNN on PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+pca_cosine_dist_train = proxy::dist(pca_train$x[,1:600], method='cosine')
+pca_cosine_dist_test = proxy::dist(pca_test[,1:600],method='cosine')
 
+knn.pred=knn(pca_cosine_dist_train,pca_cosine_dist_test,train_y,k=7) 
+tab = table(knn.pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab)
 ```
+```{r Random Forest, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(randomForest)
+set.seed(1)
+#factorize response labels
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#fit random forest
+classifier <- randomForest(x = train_X, 
+                           y = train_y_fact,
+                           nTree = 10)
+
+rand_forest_pred <- predict(classifier, newdata = test_X)
+tab_rf = table(rand_forest_pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf)
+```
+```{r Random Forest with PCA, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(randomForest)
+set.seed(1)
+#factorize response labels
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#fit random forest
+classifier2 <- randomForest(x = pca_train$x[,1:600], 
+                           y = train_y_fact,
+                           nTree = 20)
+
+rand_forest_pca_pred <- predict(classifier2, newdata = pca_test[,1:600])
+tab_rf = table(rand_forest_pca_pred,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf)
+```
+```{r Random Forest with Parameter Tuning, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+train_y_fact = factor(train_y) 
+test_y_fact = factor(test_y) 
+#sqrt(1411) = 37
+rf=randomForest(x=train_X,y=train_y_fact, mtry=37,importance=TRUE)
+
+rand_forest_pred2 <- predict(rf, newdata = test_X)
+tab_rf2 = table(rand_forest_pred2,test_y)
+
+accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
+accuracy(tab_rf2)
+```
+
+
+Our analysis of the author text data consisted of the following framework:
+
+**1. Preprocessing of the training set**
+
+**2. Preprocessing of the test set**
+
+**3. PCA setup to allow for dimension reduction during modeling**
+
+**4. Modeling and results**
+
+**5. Further considerations**
+
+Below, we dive into our processes for each of the above items.
+
+
+##### 1. PREPROCESSING OF THE TRAINING SET
+
+This section contains the bulk of the work done for this problem. We began by reading in the raw .txt files and extracting a list of all documents and a list of all author names in the training set. We then used the list of .txt files to construct the corpus for our problem. From this corpus, we convert all letters into lower case, remov all numbers; punctuation; and whitespaces, and delete all occurances of words that are contained in R's "SMART" stopwords dictionary. With the corpus fully cleaned, we create a DTM out of the corpus and remove all words that appear in only 2.5% of documents or fewer. In doing so, we guarantee that these rare words won't be given excessive weight in our models and skew our results. Finally, we replace the contents of our DTM with the TF-IDF weights of each word rather than simply their counts.
+
+##### 2. PREPROCESSING OF THE TEST SET
+
+In this section, we follow the same processes of the above section on the test set of documents, all the way up until we create the DTM. Here, we limit the dictionary of the test set's DTM to the words contained in the training set's DTM dictionary. In doing so, we ensure that both the training and testing sets' DTMs consist of the same set of columns when we begin modeling. Finally, we replace the contents of the test DTM with the TF-IDF weights of each word (same as above section).
+
+##### 3. PCA SETUP TO ALLOW FOR DIMENSION REDUCTION DURING MODELING
+
+Here, we find the PCAs of the training and testing sets. We find that the first 600 principal components explain ~80% of the variance in the training set so we proceed with the first 600 principal components.
+
+##### 4. MODELING AND RESULTS
+
+We obtain results for variations of two types of models: KNN and Random Forest. The prediction accuracies for each variant are listed below:
+
+**KNN with cosine distance:** 55.24%
+
+**KNN with cosine distance of first 600 principal components:** 58.08%
+
+**Random Forest:** 60.48%
+
+**Random Forest on first 600 principal components:** 55.28%
+
+**Random Forest with m=sqrt(p):** 62.36%
+
+As can be seen from the results above, our random forest model with m=sqrt(p)=37 and no dimensionality reduction yielded the best classification accuracy at 62.36% of articles attributed to the correct author.
+
+##### 5. FURTHER CONSIDERATIONS
+
+Our team tried to use Naive Bayes and BART to classify the articles, but ran into errors that took too long to debug before the deadline of this assignment. It is likely that these modeling techniques would outperform our above models.
+
+Further, the best way to improve our classification accuracies would be to have more robust preprocessing. For example, we could create a dummy "unknown" variable in our test DTM that would count the number of words that show up in our test set that didn't appear in our training set. Our above test DTM simply ignore new words in the test set, which likely decreases performance. We could also consider n-gram groupings of words for more nuanced TF-IDF values in our DTMs.
+
 ## Association Rule Mining
-```{r Association Rule Mining, message=FALSE, warning=FALSE}
+
+The output of the apriori algorithm on the groceries.txt file is shown below:
+```{r Association Rule Mining, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(arules)  # has a big ecosystem of packages built around it
 library(arulesViz)
@@ -192,8 +711,17 @@ transactions = as(groceries, "transactions")
 apriori_results = apriori(transactions, parameter=list(support=.01, confidence=.5, maxlen=3))
 
 #view results
-inspect(apriori_results)
-
-inspect(subset(apriori_results, subset=lift > 2))
+arules::inspect(subset(apriori_results, subset=lift > 2))
 ```
 
+The above output shows the results of the apriori algorithm with the following parameters:
+
+support = 0.01
+
+confidence = 0.5
+
+lift > 2
+
+This means that for each association rule, X => Y, at least 1% of all baskets contain X and Y and 50% of all baskets that contain X also contain Y. Finally, setting lift > 2 strengthens our association rules by accounting for the conditional probabilities between X and Y. 
+
+From our above association rules, we see that people who buy various combinations of fruits, vegetables, and dairy products also tend to buy whole milk and other vegetables. It makes sense that people who buy healthy foods would tend to also buy whole milk because there are many organizations that recommend adults to drink up to 3 cups of milk a day (livestrong.com and americanbonehealth.org). Thus, it appears that people who care enough about their health to eat plenty of fruits and vegetables also care enough about their health to drink plenty of milk.
